@@ -1,0 +1,53 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.14/require.min.js"></script>
+    <script>
+        requirejs.config( {
+            paths: {
+                "jquery": "//code.jquery.com/jquery-2.1.1.min",
+                "jquery-mobile": "//rawgit.com/jquery/jquery-mobile/master/js"
+            }
+        } );
+    </script>
+    <meta charset="utf-8">
+    <title>Touch events and iframe</title>
+    <style>
+        h3 {
+            background-color: red;
+        }
+    </style>
+<body>
+<h3>Test with Jquery Mobile</h3>
+<label for="outside">input outside iframe</label><br>
+<button id="clickme">click me!</button>
+<br>
+<input id="outside" type="text" value="try to tapping different words to change cursor position"
+       style="width: 200px;"><br>
+<iframe id="iframe" width="300"></iframe>
+<script>
+    require( [
+        "jquery",
+        "jquery-mobile/vmouse",
+        "../touchevents-fix"
+    ], function( $ ) {
+        $( document ).ready( function() {
+            initializeIframe();
+            $( "#clickme" ).on( "vclick", function() {
+                console.warn( "button clicked!" );
+            } );
+            $( "h3" ).css( {"background-color": "green"} );
+        });
+
+        function initializeIframe() {
+            var body = '<form>' +
+                    '<label for="inside">input inside iframe</label>' +
+                    '<input id="inside" type="text" value="try to tapping  different words to change cursor position" style="width: 300px;">' +
+                    '</form>';
+            $( 'iframe' ).contents().find( 'body' ).html( body );
+        }
+    });
+</script>
+</body>
+</html>
