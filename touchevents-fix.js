@@ -8,47 +8,21 @@
 	}
 }(function ( $ ) {
 	var on = $.fn.on,
-		$document = $( document ),
-		handlers = {},
-		unbound = false;
+		handlers = {};
 
 	function toggleTouchEventsBindings( bind ) {
-		if ( unbound === bind ) {
-			unbound = !bind;
-			$.each( handlers, function( key, val ) {
-				$.each( val, function( i, fn ) {
-					$document[ bind ? "on" : "off" ]( key, fn );
-				});
+		$.each( handlers, function( key, val ) {
+			$.each( val, function( i, fn ) {
+				$( document )[ bind ? "on" : "off" ]( key, fn );
 			});
-		}
-	}
-	function handleFocus( e ){
-		console.log( "focus" )
-		toggleTouchEventsBindings( false );
-		$( this ).off( "blur" );
-		console.log( e.data === this )
-		$( this ).on( "blur", function() {
-			console.log( "blur" );
-			toggleTouchEventsBindings( true );
 		});
 	}
 
 	var iosTouchEventsFixer = {
 
-		protectIframes: function() {
-			$( "iframe" ).each( function() {
-				var $contentWindow = $( this.contentWindow );
-				try {
-					$contentWindow.off( "focus", null, handleFocus );
-					$contentWindow.on( "focus", null, this.contentWindow, handleFocus );
-				} catch ( e ) {}
-			} );
-		},
-
 		install: function() {
 			$.fn.on = function( types, selector, data, fn ) {
-				var touch,
-					func = fn || data || selector,
+				var func = fn || data || selector,
 					eventObject = types;
 				if ( this.get( 0 ) === document ) {
 					if ( typeof types === "string" ) {
@@ -64,26 +38,26 @@
 						if ( !handlers[ type ] ) {
 							handlers[ type ] = [];
 						}
-						if( !$.inArray( boundFunction, handlers[ type ] ) ) {
-							handlers[ types ].push( boundFunction );
+						if( $.inArray( boundFunction, handlers[ type ] ) === -1 ) {
+							handlers[ type ].push( boundFunction );
 						}
-						touch = true;
 					}
-				}
-				if ( touch ) {
-					iosTouchEventsFixer.protectIframes();
 				}
 				return on.call( this, types, selector, data, fn );
 			};
+			$( window ).on( "focus", function( e ){
+				toggleTouchEventsBindings( true );
+			}).on( "blur", function( e ){
+				toggleTouchEventsBindings( false );
+			});
 		},
 
 		uninstall: function() {
 			$.fn.on = on;
-			rebindTouchEvents();
+			toggleTouchEventsBindings( true );
 		}
 	};
 
 	iosTouchEventsFixer.install();
-
 	return iosTouchEventsFixer;
 }));
