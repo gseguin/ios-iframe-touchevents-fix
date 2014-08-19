@@ -7,57 +7,45 @@
 		factory( jQuery );
 	}
 }(function ( $ ) {
-	var on = $.fn.on,
-		handlers = {};
-
-	function toggleTouchEventsBindings( bind ) {
-		$.each( handlers, function( key, val ) {
-			$.each( val, function( i, fn ) {
-				$( document )[ bind ? "on" : "off" ]( key, fn );
-			});
-		});
-	}
-
-	var iosTouchEventsFixer = {
-
-		install: function() {
-			$.fn.on = function( types, selector, data, fn ) {
-				var func = fn || data || selector,
-					eventObject = types;
-				if ( this.get( 0 ) === document ) {
-					if ( typeof types === "string" ) {
-						eventObject = {};
-						$.each( types.split( " " ), function( i, value ){
-							eventObject[ value ] = func;
-						});
-					}
-					$.each( eventObject, processBinding );
-				}
-				function processBinding( type, boundFunction ){
-					if ( /^touch/.test( type ) ) {
-						if ( !handlers[ type ] ) {
-							handlers[ type ] = [];
-						}
-						if( $.inArray( boundFunction, handlers[ type ] ) === -1 ) {
-							handlers[ type ].push( boundFunction );
-						}
-					}
-				}
-				return on.call( this, types, selector, data, fn );
-			};
-			$( window ).on( "focus", function( e ){
-				toggleTouchEventsBindings( true );
-			}).on( "blur", function( e ){
-				toggleTouchEventsBindings( false );
-			});
+	var ios = /iPhone|iPad|iPod/.test( window.navigator.platform ),
+		attached = 0,
+		eventHandles = {
+			"touchstart": null,
+			"touchend": null,
+			"touchmove": null,
+			"touchcancel": null
 		},
 
-		uninstall: function() {
-			$.fn.on = on;
-			toggleTouchEventsBindings( true );
-		}
-	};
+		// Attach a single capturing handler on the window while someone wants touch events
+		toggleWindowBindings = function ( unbind ) {
+			$( window )[ unbind ? "off" : "on" ]( "focus blur", function( event ) {
+				$.each( eventHandles, function( name, callback ) {
+					( this.ownerDocument || this )[ ( event.type === "focus" ) ?
+						"addEventListener" : "removeEventListener" ]( name, callback, true );
+				});
+			});
+		};
 
-	iosTouchEventsFixer.install();
-	return iosTouchEventsFixer;
+	// This fix could really break things if something goes wrong so lets target ios only
+	if ( ios ) {
+		jQuery.each( eventHandles, function( name, callback ) {
+			jQuery.event.special[ name ] = {
+				setup: function( elem, _data, _ns, eventHandle ) {
+					if( attached++ === 0 ){
+						eventHandles[ name ] = eventHandle;
+						( this.ownerDocument || this ).addEventListener( name, eventHandle, true );
+						toggleWindowBindings();
+					}
+				},
+				teardown: function() {
+					if ( --attached === 0 ) {
+						eventHandles[ name ] = null;
+						( this.ownerDocument || this )
+							.removeEventListener( name, eventHandles[ name ], true );
+						toggleWindowBindings( true );
+					}
+				}
+			};
+		});
+	}
 }));

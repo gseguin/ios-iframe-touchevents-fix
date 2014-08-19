@@ -22,6 +22,8 @@
 <h3>Test with Jquery Mobile</h3>
 <label for="outside">input outside iframe</label><br>
 <button id="clickme">click me!</button>
+<button id="unbind">Unbind vclick!</button>
+<button id="rebind">Rebind vclick!</button>
 <br>
 <input id="outside" type="text" value="try to tapping different words to change cursor position"
        style="width: 200px;"><br>
@@ -32,11 +34,18 @@
         "jquery-mobile/vmouse",
         "../touchevents-fix"
     ], function( $ ) {
+        var log = function( ) {
+                console.warn( "button clicked!" );
+        }
         $( document ).ready( function() {
             initializeIframe();
-            $( "#clickme" ).on( "vclick", function() {
-                console.warn( "button clicked!" );
-            } );
+            $( "#clickme" ).on( "vclick", log );
+            $( "#unbind" ).on( "click", function( e ){
+                $( "#clickme" ).off( "vclick", log );
+            });
+            $( "#rebind" ).on( "click", function( e ){
+                $( "#clickme" ).on( "vclick", log );
+            });
             $( "h3" ).css( {"background-color": "green"} );
         });
 
