@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "homepage": "https://github.com/gseguin/ios-iframe-touchevents-fix",
   "authors": [
-      { name: "Ghislain Seguin", "email": "ghislain@gmail.com" },
-      { name: "Alexander Schmitz", "email": "arschmitz@gmail.com"}
+      { "name": "Ghislain Seguin", "email": "ghislain@gmail.com" },
+      { "name": "Alexander Schmitz", "email": "arschmitz@gmail.com" }
   ],
   "description": "Workaround for iOS' iframes touch events issue",
   "main": "touchevents-fix.js",
