@@ -19,24 +19,40 @@
         }
     </style>
 <body>
-<h3>Test with Jquery Mobile</h3>
-<label for="outside">input outside iframe</label><br>
-<button id="clickme">click me!</button>
-<br>
-<input id="outside" type="text" value="try to tapping different words to change cursor position"
-       style="width: 200px;"><br>
-<iframe id="iframe" width="300"></iframe>
+<div>
+    <h3>Test with Jquery Mobile</h3>
+    <label for="outside">input outside iframe</label><br>
+    <button id="clickme">click me!</button>
+    <button id="unbind">Unbind vclick!</button>
+    <button id="rebind">Rebind vclick!</button>
+    <br>
+    <input id="outside" type="text" value="try to tapping different words to change cursor position" style="width: 200px;"><br>
+    <iframe id="iframe" width="300"></iframe>
+</div>
 <script>
     require( [
         "jquery",
         "jquery-mobile/vmouse",
         "../touchevents-fix"
     ], function( $ ) {
+        var log = function( ) {
+                console.warn( "button clicked!" );
+        }
         $( document ).ready( function() {
             initializeIframe();
-            $( "#clickme" ).on( "vclick", function() {
-                console.warn( "button clicked!" );
-            } );
+            $( document ).on( "vclick", "div", function(){
+                console.log( "document click!" );
+            });
+            $( "#clickme" ).on( "vclick", log );
+            $( "div" ).on( "vclick", function(){
+                console.log( "body click!" );
+            });
+            $( "#unbind" ).on( "click", function( e ){
+                $( "#clickme" ).off( "vclick", log );
+            });
+            $( "#rebind" ).on( "click", function( e ){
+                $( "#clickme" ).on( "vclick", log );
+            });
             $( "h3" ).css( {"background-color": "green"} );
         });
 
